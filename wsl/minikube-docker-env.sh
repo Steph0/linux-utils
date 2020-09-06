@@ -1,8 +1,9 @@
 #!/bin/bash
-RESULT=$(minikube docker-env |grep "SET")
-RESULT=$(echo $RESULT | sed 's/SET/export/')
-CERT_WIN_PATH=$(echo $RESULT| grep "CERT_PATH"| sed 's/.*=\(.*\)/\1/')
-CERT_LINUX_PATH=$(wslpath -u "$CERT_WIN_PATH")
-RESULT=$(echo $RESULT | sed "s,^\(.*CERT_PATH=\)\(.*\)$,\1${CERT_LINUX_PATH},")
+TARGET_FILE=~/.kube/eval-minikube-env
 
-eval $(echo $RESULT)
+minikube docker-env | grep "SET" > $TARGET_FILE
+sed -i 's/SET/export/g' $TARGET_FILE
+CERT_WIN_PATH=$(cat $TARGET_FILE| grep "CERT_PATH"| sed 's/.*=\(.*\)/\1/')
+CERT_LINUX_PATH=$(wslpath -u "$CERT_WIN_PATH")
+sed -i "s,^\(.*CERT_PATH=\)\(.*\)$,\1${CERT_LINUX_PATH}," $TARGET_FILE
+
